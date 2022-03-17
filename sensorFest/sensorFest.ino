@@ -1,12 +1,3 @@
-/***************************************************
-Copyright (c) 2018 Luis Llamas
-(www.luisllamas.es)
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License
- ****************************************************/
- 
 #include "AsyncSonarLib.h"
 #include <Wire.h>
 #include "Adafruit_MPR121.h"
@@ -15,40 +6,56 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #define _BV(bit) (1 << (bit)) 
 #endif
 
-// You can have up to 4 on one i2c bus but one is enough for testing!
-Adafruit_MPR121 cap = Adafruit_MPR121();
+#define MAX_CONN_ATTEMPT 5
 
-// Keeps track of the last pins touched
-// so we know when buttons are 'released'
+
+
 uint16_t lasttouched = 0;
 uint16_t currtouched = 0;
+uint16_t state = 5;
+uint16_t lastState = state;
 
-
-// ping complete callback
 void PingRecieved(AsyncSonar& sonar)
 {
- Serial.print("Milimetros: ");
-  Serial.println(sonar.GetMeasureMM());
+//  Serial.print("Milimetros: ");
+//  Serial.println(sonar.GetMeasureMM());
+  float measure = sonar.GetMeasureMM();
+  
+  if(measure < 100) {
+    state = 0;
+  } else if (measure >= 200 && measure <= 1000){
+    state = 1;
+  } else if (measure > 1000 && measure <= 2000){
+    state = 2;
+  } else if (measure > 2000) {
+    state = 3;
+  }
 }
 
-// timeout callback
+
 void TimeOut(AsyncSonar& sonar)
 {
-  Serial.println("TimeOut");
+  // Serial.println("TimeOut");
 }
 
-AsyncSonar sonarA0(A0, PingRecieved, TimeOut);
+Adafruit_MPR121 cap = Adafruit_MPR121();
+AsyncSonar sonarA0(A1, PingRecieved, TimeOut);
 
 void setup()
 {
   Serial.begin(115200);
    // Default address is 0x5A, if tied to 3.3V its 0x5B
    // If tied to SDA its 0x5C and if SCL then 0x5D
-   if (!cap.begin(0x5A)) {
-     Serial.println("MPR121 not found, check wiring?");
-      while (1);
+   Serial.println("");
+   Serial.print("Conectanto al MPR-121");
+   bool isInit = cap.begin(0x5A);
+   while (!isInit) {
+     Serial.print(".");
+     isInit = cap.begin(0x5A);
+     delay(500);
    }
-  Serial.println("MPR121 found!");
+  Serial.println("");
+  Serial.println("MPR121 Encontrado!");
   
   sonarA0.SetTemperatureCorrection(28);  // optional
   sonarA0.Start(100);  // start in 1500ms
@@ -56,12 +63,14 @@ void setup()
 
 void loop()
 {
-  // this is where magic begins
-  sonarA0.Update(&sonarA0);
-
-   currtouched = cap.touched();
   
-  for (uint8_t i=0; i<12; i++) {
+  sonarA0.Update(&sonarA0);
+  if(state != lastState) {
+    imprimeInfo();
+    lastState = state;
+  }
+  currtouched = cap.touched(); 
+  for (uint8_t i=0; i<6; i++) {
     // it if *is* touched and *wasnt* touched before, alert!
     if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) {
       Serial.print(i); Serial.println(" touched");
@@ -75,21 +84,24 @@ void loop()
   // reset our state
   lasttouched = currtouched;
 
-  // comment out this line for detailed data from the sensor!
-  return;
-  
-  // debugging info, what
-  Serial.print("\t\t\t\t\t\t\t\t\t\t\t\t\t 0x"); Serial.println(cap.touched(), HEX);
-  Serial.print("Filt: ");
-  for (uint8_t i=0; i<12; i++) {
-    Serial.print(cap.filteredData(i)); Serial.print("\t");
-  }
-  Serial.println();
-  Serial.print("Base: ");
-  for (uint8_t i=0; i<12; i++) {
-    Serial.print(cap.baselineData(i)); Serial.print("\t");
-  }
-  Serial.println();
+}
 
-  delay(10);
+void imprimeInfo() {
+  switch(state) {
+    case 0:
+      Serial.println("Muy Cerca");
+      break;
+    case 1:
+      Serial.println("Cerca");
+      break;
+    case 2:
+      Serial.println("Medio");
+      break;
+    case 3:
+      Serial.println("Alejado");
+      break;
+    default:
+      Serial.println("Estado no definido");
+      break;
+  }
 }
