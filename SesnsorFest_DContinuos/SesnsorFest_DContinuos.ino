@@ -11,19 +11,17 @@
 
 uint16_t lasttouched = 0;
 uint16_t currtouched = 0;
-uint16_t state = 5;
-uint16_t lastState = state;
+uint16_t cutFrequency = 127;
+uint16_t lastCutFrequency = cutFrequency;
+uint16_t measure = 0;
+uint16_t maxDistance = 1000;
 
 void PingRecieved(AsyncSonar& sonar)  {
-  float measure = sonar.GetMeasureMM();
-  if(measure < 100) {
-    state = 0;
-  } else if (measure >= 200 && measure <= 1000){
-    state = 1;
-  } else if (measure > 1000 && measure <= 2000){
-    state = 2;
-  } else if (measure > 2000) {
-    state = 3;
+  measure = sonar.GetMeasureMM();
+  if(measure < 10) {
+    measure = 10;
+  } else if (measure > maxDistance) {
+    measure = maxDistance;
   }
 }
 
@@ -58,9 +56,10 @@ void setup()  {
 void loop() {
   sonarA0.Update(&sonarA0);
 
-  if(state != lastState) {
-    manejarEstado();
-    lastState = state;
+  cutFrequency = map(measure, 10, maxDistance, 5, 127);
+  if(cutFrequency != lastCutFrequency) {
+    MIDI.sendNoteOn(cutFrequency, 100, 2);
+    lastCutFrequency = cutFrequency;
   }
   
   currtouched = cap.touched(); 
@@ -76,28 +75,4 @@ void loop() {
     }
   }
   lasttouched = currtouched;
-}
-
-void manejarEstado() {
-  switch(state) {
-    case 0:
-      // Serial.println("Muy Cerca");
-      MIDI.sendNoteOn(20, 100, 2);
-      break;
-    case 1:
-      // Serial.println("Cerca");
-      MIDI.sendNoteOn(40, 100, 2);
-      break;
-    case 2:
-      // Serial.println("Medio");
-      MIDI.sendNoteOn(80, 100, 2);
-      break;
-    case 3:
-      // Serial.println("Alejado");
-      MIDI.sendNoteOn(110, 100, 2);
-      break;
-    default:
-      Serial.println("Estado no definido");
-      break;
-  }
 }
