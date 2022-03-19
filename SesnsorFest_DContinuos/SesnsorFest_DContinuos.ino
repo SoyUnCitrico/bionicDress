@@ -7,7 +7,7 @@
 #define _BV(bit) (1 << (bit)) 
 #endif
 
-#define MAX_CONN_ATTEMPT 5
+#define MAX_CONN_ATTEMPT 10
 
 uint16_t lasttouched = 0;
 uint16_t currtouched = 0;
@@ -50,7 +50,7 @@ void setup()  {
   }
   Serial.println("");
   Serial.println("MPR121 Encontrado!");
-  //MIDI.begin();
+//  MIDI.begin(115200);
 }
 
 void loop() {
