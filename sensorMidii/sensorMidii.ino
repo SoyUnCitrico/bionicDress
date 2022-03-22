@@ -24,6 +24,8 @@ uint16_t rawFrente = 0;
 
 uint16_t maxDistance = 1000;
 
+MIDI_CREATE_DEFAULT_INSTANCE();
+
 void PingRecieved(AsyncSonar& sonar)  {
   rawEspalda = sonar.GetMeasureMM();
   if(rawEspalda < 10) {
@@ -64,25 +66,23 @@ void setup()  {
 
 void loop() {
   sonarEspalda.Update(&sonarEspalda);
-
-  midiEspalda = map(rawEspalda, 10, maxDistance, 5, 127);
+  // Convierte la informacion del sensor a una escala util para PD
+   midiEspalda = map(rawEspalda, 10, maxDistance, 5, 127); // MIDI
+  //  midiEspalda = logConvertion(rawEspalda, 10, maxDistance, 20, 20000);// Hertz
   if(midiEspalda != lastmidiEspalda) {
-//    MIDI.sendNoteOn(midiEspalda, 100, 2);
-    Serial.print("Espalda:");
-    Serial.println(midiEspalda);
+  //  Enviar datos de la distancia de la Espalda
+    MIDI.sendNoteOn(midiEspalda, 100, 2);
     lastmidiEspalda = midiEspalda;
   }
 
   sonarFrente.Update(&sonarFrente);
   midiFrente = map(rawFrente, 10, maxDistance, 5, 127);
   if(midiFrente != lastmidiFrente) {
-//    MIDI.sendNoteOn(midiEspalda, 100, 2);
-    Serial.print("Frente:");
-    Serial.println(midiFrente);
+    MIDI.sendNoteOn(midiEspalda, 100, 2);
     lastmidiFrente = midiFrente;
   }  
 
-//  delay(constants::loop_delay);
+
   if (!mpr121.communicating(constants::device_address))
   {
     Serial << "mpr121 device not commmunicating!\n\n";
@@ -90,11 +90,6 @@ void loop() {
   }
 
   mprRead();
-
-//  for(int i = 0; i < constants::physical_channel_count; i++) {
-//      bool channel_touched = mpr121.channelTouched(i);
-//      Serial << "Sensor" << i << ": " << channel_touched << "\n";
-//  }
 
 }
 
@@ -127,19 +122,28 @@ void mprSetup() {
 }
 
 void mprRead() {
-   currtouched = mpr121.getTouchStatus(constants::device_address);
-  
+  currtouched = mpr121.getTouchStatus(constants::device_address);
+  uint8_t noteBase = 30;
   for (uint8_t i=0; i < constants::physical_channel_count; i++) {
-    // it if *is* touched and *wasnt* touched before, alert!
     if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) {
-      Serial.print(i); Serial.println(" touched");
+    //  Enviar datos de la distancia de la Espalda
+      MIDI.sendNoteOn(noteBase + i, 120, 1);
     }
-    // if it *was* touched and now *isnt*, alert!
     if (!(currtouched & _BV(i)) && (lasttouched & _BV(i)) ) {
-      Serial.print(i); Serial.println(" released");
+      MIDI.sendNoteOff(noteBase + i, 0, 1);
     }
   }
 
   // reset our state
   lasttouched = currtouched;
+}
+
+
+uint16_t logConvertion(uint16_t position, uint16_t min, uint16_t max, uint16_t minLog, uint16_t maxLog) {
+  uint16_t minp = min;
+  uint16_t maxp = max;
+  uint16_t minv = log(minLog);
+  uint16_t maxv = log(maxLog);
+  uint16_t scale = (maxv - minv) / (maxp - minp);
+  return uint16_t(exp(minv + scale * (position - minp)));
 }
