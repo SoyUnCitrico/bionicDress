@@ -2,8 +2,8 @@
 #include <WiFiUdp.h>
 #include <OSCMessage.h>
 
-char ssid[] = "Stalingrado";          // your network SSID (name)
-char pass[] = "Qu1nt0s3n0r10";                    // your network password
+char ssid[] = "bionicDress";          // your network SSID (name)
+char pass[] = "bionic1123581321";                    // your network password
 byte touchButtons[] = {4, 15, 13, 12, 27};
 const int numBut = sizeof(touchButtons);
 const int ledPin = 23;
@@ -79,7 +79,7 @@ void checkButtons() {
     currentState[i] = touchRead(touchButtons[i]);
     
     //compare each index of the current and last array
-    if (currentState[i] < treshold){  //if they are not the same as last time
+    if (currentState[i] < treshold && currentState[i] != lastState[i]){  //if they are not the same as last time
     //if (currentState[i] != lastState[i]){  //if they are not the same as last time
         //print them out
         Serial.print("Boton Activado");

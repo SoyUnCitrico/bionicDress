@@ -42,34 +42,34 @@ void TimeOut(AsyncSonar& sonar) {
 }
 
 AsyncSonar sonarEspalda(A0, PingRecieved, TimeOut);
-//  AsyncSonar sonarFrente(A1, PingRecieved2, TimeOut);
+AsyncSonar sonarFrente(A1, PingRecieved2, TimeOut);
 
 void setup()  {  
   Serial.begin(115200);
   sonarEspalda.SetTemperatureCorrection(28);
-  //  sonarFrente.SetTemperatureCorrection(28);
+  sonarFrente.SetTemperatureCorrection(28);
   sonarEspalda.Start(100);
-  //  sonarFrente.Start(100);
+  sonarFrente.Start(100);
 }
 
 void loop() {
   sonarEspalda.Update(&sonarEspalda);
   // Convierte la informacion del sensor a una escala util para PD
    midiEspalda = map(rawEspalda, 10, maxDistance, 5, 127); // MIDI
-  //  midiEspalda = logConvertion(rawEspalda, 10, maxDistance, 20, 20000);// Hertz
+  // midiEspalda = logConvertion(rawEspalda, 10, maxDistance, 20, 20000);// Hertz
   if(midiEspalda != lastmidiEspalda) {
   //  Enviar datos de la distancia de la Espalda
     MIDI.sendNoteOn(midiEspalda, 100, 2);
-    Serial.println(midiEspalda); // Solo DEBUG, no usar porque el puerto MIDI usa la misma conexión
+    //Serial.println(midiEspalda); // Solo DEBUG, no usar porque el puerto MIDI usa la misma conexión
     lastmidiEspalda = midiEspalda;
   }
 
-//  sonarFrente.Update(&sonarFrente);
-//  midiFrente = map(rawFrente, 10, maxDistance, 5, 127);
-//  if(midiFrente != lastmidiFrente) {
-//    MIDI.sendNoteOn(midiEspalda, 100, 2);
-//    lastmidiFrente = midiFrente;
-//  }  
+  sonarFrente.Update(&sonarFrente);
+  midiFrente = map(rawFrente, 10, maxDistance, 5, 127);
+  if(midiFrente != lastmidiFrente) {
+    MIDI.sendNoteOn(midiEspalda, 100, 2);
+    lastmidiFrente = midiFrente;
+  }  
 
 }
 
