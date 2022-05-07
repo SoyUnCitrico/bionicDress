@@ -15,7 +15,7 @@ uint16_t midiFrente = 127;
 uint16_t lastmidiFrente = midiFrente;
 uint16_t rawFrente = 0;
 
-uint16_t maxDistance = 2000;
+uint16_t maxDistance = 1000;
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -67,7 +67,7 @@ void loop() {
   sonarFrente.Update(&sonarFrente);
   midiFrente = map(rawFrente, 10, maxDistance, 5, 127);
   if(midiFrente != lastmidiFrente) {
-    MIDI.sendNoteOn(midiEspalda, 100, 2);
+    MIDI.sendNoteOn(midiFrente, 100, 1);
     lastmidiFrente = midiFrente;
   }  
 
