@@ -12,6 +12,9 @@
 #define TRIG_PIN2 26 // TRIG pin
 #define ECHO_PIN2 27 // ECHO pin
 
+#define MAX_LIMIT 1500
+#define MIN_LIMIT 10 
+
 float distance; // store the distance from sensor
 float distance2; // store the distance from sensor
 
