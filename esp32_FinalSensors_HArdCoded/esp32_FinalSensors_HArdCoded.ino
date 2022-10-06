@@ -27,26 +27,29 @@ int muxChannel[7][3]={
 int muxes[NUM_SENS];    //  Arreglo para guardar los resultados del muxer CD4051
 float distances[2] ;    //  Arreglo para guardar la distancia del ultrasonico
 
-char ssid[] = "VENDO AGUA";          // your network SSID (name)
-char pass[] = "simon&mollY";         // your network password
+char ssid[] = "humedalTraje";          // your network SSID (name)
+char pass[] = "humedal1234";         // your network password
 
 WiFiUDP Udp;                                
-const IPAddress outIp(192, 168,88, 240);    //  remote IP -- RPI
+const IPAddress outIp(192, 168,0, 101);    //  remote IP -- RPI
 const unsigned int outPort = 7777;          // remote port to receive OSC
 const unsigned int localPort = 7778;        // local port to listen OSC 
 
 void setup() {
-  Serial.begin (115200);
+  //Serial.begin (115200);
   setSensors();
   connectWIFI();
 }
 
 void loop() {
   // Revisa por conexion WIFI
-  if(WiFi.status() != WL_CONNECTED) { Serial.println("DESCONECTADO"); connectWIFI();}
+  if(WiFi.status() != WL_CONNECTED) { 
+    //Serial.println("DESCONECTADO"); 
+    connectWIFI();
+   }
   
-  //ultraMeasureOne();
-  //ultraMeasureTwo();
+  ultraMeasureOne();
+  ultraMeasureTwo();
   readAllMux();
   delay(10);
 }
@@ -88,48 +91,48 @@ int readPinMux(int channel){
 }
 
 void readAllMux(){
-//    OSCMessage msg("/muxer1");
-//    msg.add(readPinMux(0));
-//    Udp.beginPacket(outIp, outPort);
-//    msg.send(Udp);
-//    Udp.endPacket();
-//    msg.empty();
-//
-//    
-//    OSCMessage msg2("/muxer2");
-//    msg2.add(readPinMux(1));
-//    Udp.beginPacket(outIp, outPort);
-//    msg2.send(Udp);
-//    Udp.endPacket();
-//    msg2.empty();
-//    
-//    OSCMessage msg3("/muxer3");
-//    msg3.add(readPinMux(2));
-//    Udp.beginPacket(outIp, outPort);
-//    msg3.send(Udp);
-//    Udp.endPacket();
-//    msg3.empty();
-//    
-//    OSCMessage msg4("/muxer4");
-//    msg4.add(readPinMux(3));
-//    Udp.beginPacket(outIp, outPort);
-//    msg4.send(Udp);
-//    Udp.endPacket();
-//    msg4.empty();
-//    
-//    OSCMessage msg5("/muxer5");
-//    msg5.add(readPinMux(4));
-//    Udp.beginPacket(outIp, outPort);
-//    msg5.send(Udp);
-//    Udp.endPacket();
-//    msg5.empty();
-//    
-//    OSCMessage msg6("/muxer6");
-//    msg6.add(readPinMux(5));
-//    Udp.beginPacket(outIp, outPort);
-//    msg6.send(Udp);
-//    Udp.endPacket();
-//    msg6.empty();
+    OSCMessage msg("/muxer1");
+    msg.add(readPinMux(0));
+    Udp.beginPacket(outIp, outPort);
+    msg.send(Udp);
+    Udp.endPacket();
+    msg.empty();
+
+    
+    OSCMessage msg2("/muxer2");
+    msg2.add(readPinMux(1));
+    Udp.beginPacket(outIp, outPort);
+    msg2.send(Udp);
+    Udp.endPacket();
+    msg2.empty();
+    
+    OSCMessage msg3("/muxer3");
+    msg3.add(readPinMux(2));
+    Udp.beginPacket(outIp, outPort);
+    msg3.send(Udp);
+    Udp.endPacket();
+    msg3.empty();
+    
+    OSCMessage msg4("/muxer4");
+    msg4.add(readPinMux(3));
+    Udp.beginPacket(outIp, outPort);
+    msg4.send(Udp);
+    Udp.endPacket();
+    msg4.empty();
+    
+    OSCMessage msg5("/muxer5");
+    msg5.add(readPinMux(4));
+    Udp.beginPacket(outIp, outPort);
+    msg5.send(Udp);
+    Udp.endPacket();
+    msg5.empty();
+    
+    OSCMessage msg6("/muxer6");
+    msg6.add(readPinMux(5));
+    Udp.beginPacket(outIp, outPort);
+    msg6.send(Udp);
+    Udp.endPacket();
+    msg6.empty();
     
     OSCMessage msg7("/muxer7");
     int actualRead = readPinMux(6); 
@@ -140,47 +143,47 @@ void readAllMux(){
     msg7 .empty();
  }
 
-void logInfoMuxer() {
-  Serial.print("{ ");
-  for(int i = 0; i < NUM_SENS; i++) {
-    Serial.print(readPinMux(i));
-    Serial.print(" --- ");
-  }
-  Serial.print(" } ");
-  Serial.println("");  
-}
-
-void logInfoUltrasonic() {
-  for(int i = 0; i < sizeof(distances)-1; i++){
-    Serial.print("Ultrasonic: ");
-    Serial.print(i);
-    Serial.print("   Value: ");
-    Serial.println(distances[i]);
-  }
-  Serial.println("");
-}
+//void logInfoMuxer() {
+//  Serial.print("{ ");
+//  for(int i = 0; i < NUM_SENS; i++) {
+//    Serial.print(readPinMux(i));
+//    Serial.print(" --- ");
+//  }
+//  Serial.print(" } ");
+//  Serial.println("");  
+//}
+//
+//void logInfoUltrasonic() {
+//  for(int i = 0; i < sizeof(distances)-1; i++){
+//    Serial.print("Ultrasonic: ");
+//    Serial.print(i);
+//    Serial.print("   Value: ");
+//    Serial.println(distances[i]);
+//  }
+//  Serial.println("");
+//}
 
 
 void connectWIFI() {
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+//  Serial.println();
+//  Serial.print("Connecting to ");
+//  Serial.println(ssid);
   
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
+//    Serial.print(".");
     delay(500);
   }
-  Serial.println("");
-
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  Serial.println("Starting UDP");
+//  Serial.println("");
+//
+//  Serial.println("WiFi connected");
+//  Serial.println("IP address: ");
+//  Serial.println(WiFi.localIP());
+//
+//  Serial.println("Starting UDP");
   Udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(localPort);
+//  Serial.print("Local port: ");
+//  Serial.println(localPort);
 }
 
 
@@ -191,14 +194,14 @@ void setSensors(){
 
   digitalWrite(PINA, LOW);
   digitalWrite(PINB, LOW);
-  digitalWrite(PINC, LOW);
-  Serial.println("MUXER Inicializado");
+//  digitalWrite(PINC, LOW);
+//  Serial.println("MUXER Inicializado");
 
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   
   pinMode(TRIG_PIN2, OUTPUT);
   pinMode(ECHO_PIN2, INPUT);
-  Serial.println("ULTRASONICO Inicializado");
+  //  Serial.println("ULTRASONICO Inicializado");
 
 }
