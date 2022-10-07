@@ -31,7 +31,7 @@ char ssid[] = "VENDO AGUA";          // your network SSID (name)
 char pass[] = "simon&mollY";         // your network password
 
 WiFiUDP Udp;                                
-const IPAddress outIp(192, 168,88, 240);    //  remote IP -- RPI
+const IPAddress outIp(192, 168,88, 249);    //  remote IP -- RPI
 const unsigned int outPort = 7777;          // remote port to receive OSC
 const unsigned int localPort = 7778;        // local port to listen OSC 
 

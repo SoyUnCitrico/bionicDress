@@ -27,11 +27,13 @@ int muxChannel[7][3]={
 int muxes[NUM_SENS];    //  Arreglo para guardar los resultados del muxer CD4051
 float distances[2] ;    //  Arreglo para guardar la distancia del ultrasonico
 
-char ssid[] = "humedalTraje";          // your network SSID (name)
-char pass[] = "humedal1234";         // your network password
+//char ssid[] = "humedalTraje";          // your network SSID (name)
+//char pass[] = "humedal1234";         // your network password
+char ssid[] = "VENDO AGUA";          // your network SSID (name)
+char pass[] = "simon&mollY";         // your network password
 
 WiFiUDP Udp;                                
-const IPAddress outIp(192, 168,0, 101);    //  remote IP -- RPI
+const IPAddress outIp(192, 168,88, 249);    //  remote IP -- RPI
 const unsigned int outPort = 7777;          // remote port to receive OSC
 const unsigned int localPort = 7778;        // local port to listen OSC 
 
