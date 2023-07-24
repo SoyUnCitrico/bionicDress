@@ -39,23 +39,16 @@ void ultraMeasure() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   float duration_us = pulseIn(ECHO_PIN, HIGH) * 0.017;
+  
+  //Serial.print("   Value: ");
+  //Serial.println(duration_us);
+  
   OSCMessage ultra("/ultra1");
   ultra.add(duration_us);
   Udp.beginPacket(outIp, outPort);
   ultra.send(Udp);
   Udp.endPacket();
   ultra.empty();
-}
-
-
-void logInfoUltrasonic() {
-  for(int i = 0; i < sizeof(distances)-1; i++){
-    Serial.print("Ultrasonic: ");
-    Serial.print(i);
-    Serial.print("   Value: ");
-    Serial.println(distances[i]);
-  }
-  Serial.println("");
 }
 
 
@@ -75,10 +68,10 @@ void connectWIFI() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  Serial.println("Starting UDP");
-  Udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(localPort);
+  //Serial.println("Starting UDP");
+  //Udp.begin(localPort);
+  //Serial.print("Local port: ");
+  //Serial.println(localPort);
 }
 
 
@@ -86,5 +79,4 @@ void setSensors(){
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   Serial.println("ULTRASONICO Inicializado");
-
 }
