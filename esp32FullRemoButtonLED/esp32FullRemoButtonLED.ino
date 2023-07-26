@@ -3,34 +3,47 @@
 #include <OSCMessage.h>
 #include <analogWrite.h>
 
-char ssid[] = "HUMEDAL-VIVO";          // your network SSID (name)
-char pass[] = "humedal212223";                    // your network password  
+//char ssid[] = "HUMEDAL-VIVO";          
+//char pass[] = "humedal212223";                     
+char ssid[] = "VENDO AGUA";          // your network SSID (name)
+char pass[] = "simon&mollY";                    // your network password  
 
-//byte touchButtons[] = {12, 13, 14, 27};
-byte touchButtons[] = {13};
+byte touchButtons[] = {12, 13, 14, 27};
+//byte touchButtons[] = {13};
 
 const int numBut = sizeof(touchButtons);
-const int ledPin = 18;   //19
+const int ledPin = 18;
+const int buttonPin = 19;
 const int tresholdMin = 10;
 const int tresholdMax = 30;
 
 //arrays to hold current and last state of buttons 
 static byte lastState[numBut];
 boolean currentState[numBut];
+boolean wifiConnected = false;
 static byte  rawState[numBut];
 
 
 WiFiUDP Udp;                                
-const IPAddress outIp(192, 168, 50, 46);     // La IP remota de la RPI
+const IPAddress outIp(192, 168, 0, 100);     // La IP remota de la RPI
 
 const unsigned int outPort = 7777;          // remote port to receive OSC
 const unsigned int localPort = 7778;        // local port to listen for OSC packets (actually not used for sending)
 
+// Variables will change:
+int ledState = LOW;        // the current state of the output pin
+int buttonState;            // the current reading from the input pin
+int lastButtonState = LOW;  // the previous reading from the input pin
 
+// the following variables are unsigned longs because the time, measured in
+// milliseconds, will quickly become a bigger number than can be stored in an int.
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 80;   
 
 void setup() {
   // set up serial port
   pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin, INPUT);
   Serial.begin(115200);
   
   //debug
@@ -42,16 +55,23 @@ void setup() {
   for (int i=0; i<numBut; i++){
     pinMode(touchButtons[i], INPUT);
     currentState[i] = false;
-    Serial.print("Button inputs ");
+    Serial.print("Setup input ");
     Serial.println(i);
   }
-  analogWrite(ledPin, 120);
+
+  for (int i=0; i<numBut; i++){
+    currentState[i] = false;
+  }
 }
 
 void loop() {
-  //if(WiFi.status() != WL_CONNECTED) {digitalWrite(ledPin, LOW);}
-  checkButtons();
-  delay(20);
+  if(WiFi.status() != WL_CONNECTED) { wifiConnected = false; }
+  checkTouch();
+  debounce(buttonPin);
+  if(wifiConnected == true) {
+    digitalWrite(ledPin, ledState);
+  }
+  delay(10);
 }
 
 
@@ -73,7 +93,7 @@ void wifiSetup () {
   }
 
   Serial.println("");
-  digitalWrite(ledPin, HIGH);
+  wifiConnected = true;
 
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
@@ -85,7 +105,7 @@ void wifiSetup () {
   Serial.println(localPort);
 }
 
-void checkButtons() {
+void checkTouch() {
   //int i = 4; //Prueba
   for (int i=0; i<numBut; i++){
     rawState[i] = touchRead(touchButtons[i]);
@@ -96,7 +116,7 @@ void checkButtons() {
     }
 
     if(currentState[i] != lastState[i]) {
-      sendMessageRPI(i, rawState[i]);
+      //sendMessageRPI(i, rawState[i]);
       lastState[i] = currentState[i];
     }
     Serial.print("Boton");
@@ -118,4 +138,41 @@ void sendMessageRPI(int button, byte state) {
    msg.send(Udp);
    Udp.endPacket();
    msg.empty();
+}
+
+void debounce (int buttonPin) {
+   // read the state of the switch into a local variable:
+  int reading = digitalRead(buttonPin);
+
+  // check to see if you just pressed the button
+  // (i.e. the input went from LOW to HIGH), and you've waited long enough
+  // since the last press to ignore any noise:
+
+  // If the switch changed, due to noise or pressing:
+  if (reading != lastButtonState) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer than the debounce
+    // delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      // only toggle the LED if the new button state is HIGH
+      if (buttonState == HIGH) {
+        ledState = !ledState;
+      }
+    }
+  }
+
+  // set the LED:
+  //digitalWrite(ledPin, ledState);
+  Serial.println("BUTTON PRESSED");
+
+  // save the reading. Next time through the loop, it'll be the lastButtonState:
+  lastButtonState = reading;
 }
